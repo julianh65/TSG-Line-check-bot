@@ -1,0 +1,142 @@
+# -*- coding: UTF-8 -*-
+
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+import time
+import datetime
+from selenium.common.exceptions import NoSuchElementException
+
+
+#open chrome
+driver = webdriver.Chrome(ChromeDriverManager().install())
+
+#open whatsapp
+driver.get('https://web.whatsapp.com/')
+
+#wait to scan
+time.sleep(20)
+
+#open up tsg 2 group
+user = driver.find_element_by_xpath('//span[@title = "{}"]'.format("ORL TSG 2"))
+user.click()
+
+#time getter
+current_time = datetime.datetime.now().time()
+timeo = str(current_time)
+timez = timeo[0:2]
+
+#generate possible xpaths for most recent messege
+numbers = range(50,-1,-1)
+def make_xpath(numbers):
+    values = []
+    for i in numbers:
+        values.append("//*[@id=\"main\"]/div[3]/div/div/div[3]/div[" + str(i) + "]")
+    return values
+
+possible_xpaths = make_xpath(numbers)
+
+
+#get the most recent messege as a string
+def get_recent_messge_text_xpath(possible_xpaths):
+    for path in possible_xpaths:
+        recent_messege = "placeholder"
+        try:
+            recent_messege = driver.find_element_by_xpath(path).text
+            print("Checking most recent path:" + str(path))
+            print(recent_messege)
+        except NoSuchElementException:
+            pass
+        if recent_messege != "placeholder":
+            timepathvalue = path[43]
+            print(timepathvalue)
+            break
+    return recent_messege
+
+#Time recent messege getter
+
+numbers = range(50,-1,-1)
+def make_timexpath(numbers):
+    values = []
+    for i in numbers:
+        values.append("//*[@id=\"main\"]/div[3]/div/div/div[3]/div[" + str(i) + "]/div/div/div[3]")
+    return values
+
+possible_time_xpaths = make_timexpath(numbers)
+
+def get_time_xpath(possible_xpaths):
+    for path in possible_xpaths:
+        recent_messege = "placeholder"
+        try:
+            recent_messege = driver.find_element_by_xpath(path).text
+            print("Checking most recent path:" + str(path))
+        except NoSuchElementException:
+            pass
+        if recent_messege != "placeholder":
+            break
+    return recent_messege
+
+messegetimecut = str(get_time_xpath(possible_xpaths))
+messegetime = messegetimecut[0:2]
+
+print("TIMETIMETIME")
+print(timez)
+print(messegetimecut)
+print(messegetime)
+
+#is a line check happening function
+def is_it_a_linecheck():
+    recent_messegex = get_recent_messge_text_xpath(possible_xpaths)
+    if "PLEASE ACKNOWLEDGE" in recent_messegex and timez == messegetime:
+        print("It is a line check!")
+        return True
+    else:
+        print("Currently not a line check")
+        return False
+
+
+#will find my name in the list
+def find_JULIAN():
+    test = recent_messegex.splitlines(True)
+    test1 = [w.replace('\n', 'yyy') for w in test]
+    test2 = [w.split() for w in test1]
+    test3 = sum(test2, [])
+    recent_messegelst = [w.replace('yyy', '\n') for w in test3]
+    counter = 0
+    for word in recent_messegelst:
+        counter += 1
+        if word == "Julian":
+            break
+    return counter
+#adds tick after my name
+def add_the_tick(my_position, recent_messegex):
+    test = recent_messegex.splitlines(True)
+    test1 = [w.replace('\n', 'yyy') for w in test]
+    test2 = [w.split() for w in test1]
+    test3 = sum(test2, [])
+    recent_messegelst = [w.replace('yyy', '\n') for w in test3]
+    recent_messegelst[my_position + 1] = recent_messegelst[my_position + 1].replace("\n", "")
+    before_tick = recent_messegelst[0:my_position + 2]
+    after_tick = recent_messegelst[my_position + 2:]
+    the_tick = ['✅\n']
+    new_messege = before_tick + the_tick
+    new_messege2 = new_messege + after_tick
+    new_messege_string = ' '.join(new_messege2)
+    return new_messege_string
+
+count = 0
+while count < 4:
+    print("Check:")
+    if is_it_a_linecheck() == True:
+        recent_messegex = get_recent_messge_text_xpath(possible_xpaths)
+        my_position = find_JULIAN()
+        msg_box = driver.find_element_by_class_name('_2S1VP')
+        print(add_the_tick(my_position, recent_messegex))
+        print("Messege sent")
+        break
+    print("Will check again in 10 seconds...")
+    time.sleep(10)
+    count +=1
+
+#send msg
+#driver.find_element_by_class_name('compose-btn-send').click()
+#msg_box.send_keys(add_the_tick(my_position, recent_messegex))
